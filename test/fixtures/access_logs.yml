@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  web_access_key: one
+  ip_address: MyString
+  user_agent: MyText
+  entered_at: 2026-03-20 00:12:23
+  exited_at: 2026-03-20 00:12:23
+  duration: 1
+
+two:
+  web_access_key: two
+  ip_address: MyString
+  user_agent: MyText
+  entered_at: 2026-03-20 00:12:23
+  exited_at: 2026-03-20 00:12:23
+  duration: 1

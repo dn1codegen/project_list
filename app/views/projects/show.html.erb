@@ -1,0 +1,147 @@
+<nav class="navbar">
+  <div class="container">
+    <div>
+      <div style="margin-bottom: 5px;">
+        <code style="font-size: 14px; font-weight: bold; color: black;"><%= @project.sku %></code>
+      </div>
+      <div style="margin-bottom: 5px;">
+        <span style="font-size: 24px; font-weight: bold;"><%= @project.name %></span>
+      </div>
+      <div>
+        <span style="font-size: 16px;"><%= @project.customer %></span>
+        <% if @project.address.present? %>
+          <span style="margin-left: 10px; font-size: 16px;">•</span>
+          <span style="margin-left: 10px; font-size: 16px;"><%= @project.address %></span>
+        <% end %>
+      </div>
+    </div>
+    <div>
+      <% if @web_access_key_name %>
+        <div style="color: white; font-size: 14px; margin-bottom: 8px;">
+          Пользователь: <strong><%= @web_access_key_name %></strong>
+        </div>
+      <% end %>
+      <div style="display: flex; gap: 15px;">
+        <% if current_admin %>
+          <%= link_to 'Админка', admin_dashboard_path, class: 'btn btn-sm btn-primary' %>
+        <% end %>
+        <%= link_to 'К Списку Проектов', projects_path(token: params[:token]), class: 'btn btn-sm btn-light' if params[:token].present? %>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="card">
+    <h2 class="card-title">Информация о проекте</h2>
+    <div class="project-details">
+      <p><strong>Создан:</strong> <%= @project.created_at.strftime('%d.%m.%y %H:%M') %></p>
+      <p><strong>Обновлен:</strong> <%= @project.updated_at.strftime('%d.%m.%y %H:%M') %></p>
+    </div>
+    <% if @project.project_pdf %>
+      <div class="file-list" style="margin-top: 20px;">
+        <div class="file-item">
+          <div class="file-info">
+            <strong>Проект (PDF):</strong>
+            <%= link_to @project.project_pdf.file.filename, url_for(@project.project_pdf.file), target: '_blank', class: 'file-link' %>
+          </div>
+        </div>
+      </div>
+      <% if @project.project_pdf.description.present? %>
+        <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+          <strong>Последние изменения:</strong>
+          <p style="margin-top: 10px;"><%= @project.project_pdf.description.strip %></p>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @project.description.present? %>
+    <div class="card">
+      <h2 class="card-title">Задание от заказчика</h2>
+      <p class="project-description"><%= simple_format(@project.description) %></p>
+    </div>
+  <% end %>
+
+  <% if @project.measurements.any? %>
+    <div class="card">
+      <h2 class="card-title">Замеры</h2>
+      <div class="cards-grid">
+        <% @project.measurements.each do |file| %>
+          <% if file.file.variable? %>
+            <div class="image-card" onclick="openModal('<%= url_for(file.file) %>')">
+              <div class="card-image">
+                <%= image_tag file.file.variant(resize_to_limit: [300, 300]), class: 'card-img' %>
+              </div>
+              <div class="card-body">
+                <p class="card-text"><%= file.file.filename.base.to_s.truncate(30) %></p>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @project.examples.any? %>
+    <div class="card">
+      <h2 class="card-title">Примеры</h2>
+      <div class="cards-grid">
+        <% @project.examples.each do |file| %>
+          <% if file.file.variable? %>
+            <div class="image-card" onclick="openModal('<%= url_for(file.file) %>')">
+              <div class="card-image">
+                <%= image_tag file.file.variant(resize_to_limit: [300, 300]), class: 'card-img' %>
+              </div>
+              <div class="card-body">
+                <p class="card-text"><%= file.file.filename.base.to_s.truncate(30) %></p>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<div id="imageModal" class="modal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <img id="modalImage" src="" alt="Увеличенное изображение">
+  </div>
+</div>
+
+<script>
+function openModal(imageUrl) {
+  var modal = document.getElementById('imageModal');
+  var modalImg = document.getElementById('modalImage');
+  
+  modalImg.src = imageUrl;
+  modal.style.display = 'flex';
+  
+  setTimeout(function() {
+    modalImg.classList.add('modal-image-loaded');
+  }, 10);
+}
+
+function closeModal(event) {
+  var modal = document.getElementById('imageModal');
+  var modalImg = document.getElementById('modalImage');
+  
+  if (event.target === modal || event.target === document.getElementById('modalImage')) {
+    modalImg.classList.remove('modal-image-loaded');
+    setTimeout(function() {
+      modal.style.display = 'none';
+      modalImg.src = '';
+    }, 200);
+  }
+}
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    var modal = document.getElementById('imageModal');
+    if (modal.style.display === 'flex') {
+      closeModal({target: modal});
+    }
+  }
+});
+</script>

@@ -1,0 +1,116 @@
+<nav class="navbar">
+  <div class="container">
+    <h1 class="navbar-brand">API Ключи</h1>
+    <%= link_to 'К Списку Проектов', projects_path(token: params[:token]), class: 'btn btn-sm btn-light' %>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="card">
+    <h2 class="card-title">Ключи веб-доступа</h2>
+    <p style="color: #6c757d; margin-bottom: 15px;">Для доступа к веб-интерфейсу как ?token=...</p>
+    <%= form_with url: create_web_access_key_api_keys_path(token: params[:token]), method: :post, local: true do |f| %>
+      <div style="display: flex; gap: 10px; align-items: flex-end;">
+        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+          <%= text_field_tag :name, nil, required: true, class: 'form-control', placeholder: 'Название ключа' %>
+        </div>
+        <%= f.submit 'Создать', class: 'btn btn-primary' %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="card">
+    <% if @web_access_keys.empty? %>
+      <p class="no-keys">Нет созданных ключей</p>
+    <% else %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Название</th>
+              <th>Ключ</th>
+              <th>URL</th>
+              <th style="text-align: center;">Статус</th>
+              <th style="width: 80px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @web_access_keys.each do |key| %>
+              <tr>
+                <td><%= key.name %></td>
+                <td><code style="font-size: 11px; word-break: break-all;"><%= key.key %></code></td>
+                <td><code style="font-size: 11px; color: #0066cc; word-break: break-all;">http://localhost:3000/projects?token=<%= key.key %></code></td>
+                <td style="text-align: center;">
+                  <%= form_with(url: toggle_api_key_path(key, type: 'web_access', token: params[:token]), method: :patch, html: { style: 'display: inline;' }) do |f| %>
+                    <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                      <input type="checkbox" <%= key.active ? 'checked' : '' %> onchange="this.form.submit()" style="opacity: 0; width: 0; height: 0; position: absolute;">
+                      <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: <%= key.active ? '#28a745' : '#ccc' %>; transition: .3s; border-radius: 24px;">
+                        <span style="position: absolute; content: ''; height: 18px; width: 18px; left: <%= key.active ? '22px' : '3px' %>; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%;"></span>
+                      </span>
+                    </label>
+                  <% end %>
+                </td>
+                <td>
+                  <%= button_to 'Удалить', destroy_web_access_key_api_keys_path(key, token: params[:token]), method: :delete, data: { confirm: 'Вы уверены?' }, class: 'btn btn-sm btn-danger' %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="card" style="margin-top: 30px;">
+    <h2 class="card-title">Ключи для проектов</h2>
+    <p style="color: #6c757d; margin-bottom: 15px;">Для отправки файлов через send.rb</p>
+    <%= form_with url: create_project_key_api_keys_path(token: params[:token]), method: :post, local: true do |f| %>
+      <div style="display: flex; gap: 10px; align-items: flex-end;">
+        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+          <%= text_field_tag :name, nil, required: true, class: 'form-control', placeholder: 'Название ключа' %>
+        </div>
+        <%= f.submit 'Создать', class: 'btn btn-primary' %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="card">
+    <% if @project_keys.empty? %>
+      <p class="no-keys">Нет созданных ключей</p>
+    <% else %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Название</th>
+              <th>Ключ</th>
+              <th style="text-align: center;">Статус</th>
+              <th style="width: 80px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @project_keys.each do |key| %>
+              <tr>
+                <td><%= key.name %></td>
+                <td><code style="font-size: 11px; word-break: break-all;"><%= key.key %></code></td>
+                <td style="text-align: center;">
+                  <%= form_with(url: toggle_api_key_path(key, type: 'project', token: params[:token]), method: :patch, html: { style: 'display: inline;' }) do |f| %>
+                    <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                      <input type="checkbox" <%= key.active ? 'checked' : '' %> onchange="this.form.submit()" style="opacity: 0; width: 0; height: 0; position: absolute;">
+                      <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: <%= key.active ? '#28a745' : '#ccc' %>; transition: .3s; border-radius: 24px;">
+                        <span style="position: absolute; content: ''; height: 18px; width: 18px; left: <%= key.active ? '22px' : '3px' %>; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%;"></span>
+                      </span>
+                    </label>
+                  <% end %>
+                </td>
+                <td>
+                  <%= button_to 'Удалить', destroy_project_key_api_keys_path(key, token: params[:token]), method: :delete, data: { confirm: 'Вы уверены?' }, class: 'btn btn-sm btn-danger' %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,59 @@
+<nav class="navbar">
+  <div class="container">
+    <h1 class="navbar-brand">Статистика по ссылке: <%= @web_access_key.name %></h1>
+    <%= link_to '← К Админке', admin_dashboard_path, class: 'btn btn-sm btn-light' %>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="card">
+    <h2 class="card-title">Статистика по проектам</h2>
+    <% if @project_stats.empty? %>
+      <p class="no-keys">Нет данных о просмотрах проектов</p>
+    <% else %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Название</th>
+              <th>Количество</th>
+              <th>Время</th>
+              <th>Посещение</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @project_stats.each do |project, stats| %>
+              <tr>
+                <td>
+                  <div>
+                    <%= link_to project.name, project_path(project) %> • <%= project.sku %>
+                  </div>
+                  <div style="font-size: 12px; color: #6c757d;">
+                    <%= project.customer %> • <%= project.address %>
+                  </div>
+                </td>
+                <td><%= stats[:views_count] %></td>
+                <td>
+                  <% if stats[:duration] && stats[:duration] > 0 %>
+                    <% minutes = stats[:duration] / 60 %>
+                    <% seconds = stats[:duration] % 60 %>
+                    <%= "#{minutes}м #{seconds}с" %>
+                  <% else %>
+                    <span style="color: #6c757d;">-</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if stats[:last_viewed_at] %>
+                    <%= stats[:last_viewed_at].strftime('%d.%m.%Y %H:%M') %>
+                  <% else %>
+                    <span style="color: #6c757d;">-</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+</div>

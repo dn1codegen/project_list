@@ -1,0 +1,100 @@
+<nav class="navbar">
+  <div class="container">
+    <h1 class="navbar-brand">Проекты</h1>
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <% if current_admin %>
+        <%= link_to 'Админка', admin_dashboard_path, class: 'btn btn-sm btn-primary' %>
+      <% end %>
+      <% if @web_access_key_name %>
+        <div style="color: white; font-size: 14px;">
+          Пользователь: <strong><%= @web_access_key_name %></strong>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="search-box">
+    <%= form_with url: projects_path, method: :get, id: 'search-form', data: { turbo_frame: 'projects-table' } do |f| %>
+      <div class="search-input">
+        <%= hidden_field_tag :token, params[:token] %>
+        <%= f.text_field :search, value: params[:search], placeholder: 'Поиск по названию, заказчику, адресу или артикулу', class: 'form-control', id: 'search-input' %>
+        <button type="submit" class="search-button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+          </svg>
+        </button>
+      </div>
+    <% end %>
+  </div>
+
+  <script>
+    var searchInput = document.getElementById('search-input');
+    var searchForm = document.getElementById('search-form');
+    var timeout = null;
+
+    searchInput.addEventListener('input', function() {
+      clearTimeout(timeout);
+      timeout = setTimeout(function() {
+        searchForm.requestSubmit();
+      }, 300);
+    });
+  </script>
+
+  <%= turbo_frame_tag 'projects-table' do %>
+    <% if @projects.empty? %>
+      <div class="alert">
+        <%= params[:search].present? ? 'Проекты не найдены' : 'Нет проектов' %>
+      </div>
+    <% else %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Проект</th>
+              <th>Изменения</th>
+              <th>Создан Обновлен</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @projects.each do |project| %>
+              <tr style="cursor: pointer;" onclick="window.location.href='<%= project_path(project, token: params[:token]) %>'">
+                <td style="vertical-align: top;">
+                  <div style="margin-bottom: 8px;">
+                    <strong><%= project.name %></strong> 
+                    <code style="margin-left: 8px;"><%= project.sku %></code>
+                  </div>
+                  <div>
+                    <%= project.customer %>
+                    <% if project.address.present? %>
+                      <span style="margin-left: 8px;">•</span>
+                      <span style="margin-left: 8px;"><%= project.address %></span>
+                    <% end %>
+                  </div>
+                </td>
+                <td style="vertical-align: top;">
+                  <% if project.project_pdf && project.project_pdf.description.present? %>
+                    <div style="word-wrap: break-word;">
+                      <%= project.project_pdf.description.strip %>
+                    </div>
+                  <% else %>
+                    Без описания
+                  <% end %>
+                </td>
+                <td style="vertical-align: top;">
+                  <div style="margin-bottom: 8px;">
+                    <%= project.created_at.strftime('%d.%m.%y %H:%M') %>
+                  </div>
+                  <div>
+                    <%= project.updated_at.strftime('%d.%m.%y %H:%M') %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  <% end %>
+</div>
