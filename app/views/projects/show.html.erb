@@ -76,35 +76,47 @@
           <% end %>
         <% else %>
           <!-- Новая динамическая система -->
-          <div class="cards-grid">
-            <% files.each do |file| %>
-              <% if file.image? %>
-                <!-- Изображение - карточка -->
-                <div class="image-card" onclick="openModal('<%= url_for(file.file) %>')">
-                  <div class="card-image">
-                    <%= image_tag file.file.variant(resize_to_limit: [300, 300]), class: 'card-img' %>
+          <% text_files = files.select { |f| f.text_file? } %>
+          <% other_files = files.reject { |f| f.text_file? } %>
+          
+          <!-- Изображения и документы - карточки -->
+          <% if other_files.any? %>
+            <div class="cards-grid">
+              <% other_files.each do |file| %>
+                <% if file.image? %>
+                  <!-- Изображение - карточка -->
+                  <div class="image-card" onclick="openModal('<%= url_for(file.file) %>')">
+                    <div class="card-image">
+                      <%= image_tag file.file.variant(resize_to_limit: [300, 300]), class: 'card-img' %>
+                    </div>
+                    <div class="card-body">
+                      <p class="card-text"><%= file.description %></p>
+                    </div>
                   </div>
-                  <div class="card-body">
-                    <p class="card-text"><%= file.description %></p>
+                <% else %>
+                  <!-- Документ (PDF, DOC и т.д.) -->
+                  <div class="file-link-card">
+                    <%= link_to file.file.filename, url_for(file.file), target: '_blank', class: 'file-link' %>
+                    <% if file.description.present? %>
+                      <p class="file-description"><%= file.description %></p>
+                    <% end %>
                   </div>
-                </div>
-              <% elsif file.text_file? %>
-                <!-- Текстовый файл -->
-                <div class="text-file-card">
-                  <h3><%= file.description %></h3>
-                  <pre><%= file.file.download.force_encoding('UTF-8') %></pre>
-                </div>
-              <% else %>
-                <!-- Документ (PDF, DOC и т.д.) -->
-                <div class="file-link-card">
-                  <%= link_to file.file.filename, url_for(file.file), target: '_blank', class: 'file-link' %>
-                  <% if file.description.present? %>
-                    <p class="file-description"><%= file.description %></p>
-                  <% end %>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+          
+          <!-- Текстовые файлы - без карточек, с разделителями -->
+          <% if text_files.any? %>
+            <div class="text-files-container">
+              <% text_files.each_with_index do |file, index| %>
+                <div class="text-file-section<%= ' no-border' if index == text_files.length - 1 %>">
+                  <h3 class="text-file-title"><%= file.description %></h3>
+                  <pre class="text-file-content"><%= file.file.download.force_encoding('UTF-8') %></pre>
                 </div>
               <% end %>
-            <% end %>
-          </div>
+            </div>
+          <% end %>
         <% end %>
       </div>
     <% end %>
