@@ -38,22 +38,6 @@
       <p><strong>Создан:</strong> <%= @project.created_at.strftime('%d.%m.%y %H:%M') %></p>
       <p><strong>Обновлен:</strong> <%= @project.updated_at.strftime('%d.%m.%y %H:%M') %></p>
     </div>
-    <% if @project.project_pdf %>
-      <div class="file-list" style="margin-top: 20px;">
-        <div class="file-item">
-          <div class="file-info">
-            <strong>Проект (PDF):</strong>
-            <%= link_to @project.project_pdf.file.filename, url_for(@project.project_pdf.file), target: '_blank', class: 'file-link' %>
-          </div>
-        </div>
-      </div>
-      <% if @project.project_pdf.description.present? %>
-        <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
-          <strong>Последние изменения:</strong>
-          <p style="margin-top: 10px;"><%= @project.project_pdf.description.strip %></p>
-        </div>
-      <% end %>
-    <% end %>
   </div>
 
   <% if @project.description.present? %>
@@ -63,44 +47,67 @@
     </div>
   <% end %>
 
-  <% if @project.measurements.any? %>
-    <div class="card">
-      <h2 class="card-title">Замеры</h2>
-      <div class="cards-grid">
-        <% @project.measurements.each do |file| %>
-          <% if file.file.variable? %>
-            <div class="image-card" onclick="openModal('<%= url_for(file.file) %>')">
-              <div class="card-image">
-                <%= image_tag file.file.variant(resize_to_limit: [300, 300]), class: 'card-img' %>
-              </div>
-              <div class="card-body">
-                <p class="card-text"><%= file.file.filename.base.to_s.truncate(30) %></p>
-              </div>
-            </div>
-          <% end %>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
-
-  <% if @project.examples.any? %>
-    <div class="card">
-      <h2 class="card-title">Примеры</h2>
-      <div class="cards-grid">
-        <% @project.examples.each do |file| %>
-          <% if file.file.variable? %>
-            <div class="image-card" onclick="openModal('<%= url_for(file.file) %>')">
-              <div class="card-image">
-                <%= image_tag file.file.variant(resize_to_limit: [300, 300]), class: 'card-img' %>
-              </div>
-              <div class="card-body">
-                <p class="card-text"><%= file.file.filename.base.to_s.truncate(30) %></p>
+  <!-- Динамическое отображение всех папок/типов файлов -->
+  <% if @project.project_files.any? %>
+    <% @project.files_grouped_by_type.each do |file_type, files| %>
+      <% folder_title = file_type.titleize %>
+      <% is_old_project = ['measurement', 'example', 'project_pdf'].include?(file_type) %>
+      
+      <div class="card">
+        <h2 class="card-title"><%= folder_title %></h2>
+        
+        <% if file_type == 'project_pdf' && is_old_project %>
+          <!-- Backward compatibility для старого project_pdf -->
+          <% files.each do |file| %>
+            <div class="file-list">
+              <div class="file-item">
+                <div class="file-info">
+                  <strong>Проект (PDF):</strong>
+                  <%= link_to file.file.filename, url_for(file.file), target: '_blank', class: 'file-link' %>
+                </div>
               </div>
             </div>
+            <% if file.description.present? %>
+              <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                <strong>Последние изменения:</strong>
+                <p style="margin-top: 10px;"><%= file.description.strip %></p>
+              </div>
+            <% end %>
           <% end %>
+        <% else %>
+          <!-- Новая динамическая система -->
+          <div class="cards-grid">
+            <% files.each do |file| %>
+              <% if file.image? %>
+                <!-- Изображение - карточка -->
+                <div class="image-card" onclick="openModal('<%= url_for(file.file) %>')">
+                  <div class="card-image">
+                    <%= image_tag file.file.variant(resize_to_limit: [300, 300]), class: 'card-img' %>
+                  </div>
+                  <div class="card-body">
+                    <p class="card-text"><%= file.description %></p>
+                  </div>
+                </div>
+              <% elsif file.text_file? %>
+                <!-- Текстовый файл -->
+                <div class="text-file-card">
+                  <h3><%= file.description %></h3>
+                  <pre><%= file.file.download.force_encoding('UTF-8') %></pre>
+                </div>
+              <% else %>
+                <!-- Документ (PDF, DOC и т.д.) -->
+                <div class="file-link-card">
+                  <%= link_to file.file.filename, url_for(file.file), target: '_blank', class: 'file-link' %>
+                  <% if file.description.present? %>
+                    <p class="file-description"><%= file.description %></p>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
         <% end %>
       </div>
-    </div>
+    <% end %>
   <% end %>
 </div>
 

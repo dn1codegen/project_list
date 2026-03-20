@@ -1,6 +1,8 @@
 class Project < ApplicationRecord
   has_many :project_files, dependent: :destroy
   has_many :project_views, dependent: :destroy
+
+  # Backward compatibility - оставляем старые отношения для существующих проектов
   has_many :measurements, -> { where(file_type: "measurement") }, class_name: "ProjectFile"
   has_many :examples, -> { where(file_type: "example") }, class_name: "ProjectFile"
   has_one :project_pdf, -> { where(file_type: "project_pdf") }, class_name: "ProjectFile"
@@ -35,5 +37,24 @@ class Project < ApplicationRecord
 
   def increment_updates_count
     update_column(:updates_count, updates_count + 1)
+  end
+
+  # Универсальные методы для работы с файлами по типу
+  def files_by_type(type)
+    project_files.where(file_type: type)
+  end
+
+  def single_file_by_type(type)
+    project_files.find_by(file_type: type)
+  end
+
+  # Получить все уникальные типы файлов (папки)
+  def file_types
+    project_files.pluck(:file_type).uniq
+  end
+
+  # Получить файлы сгруппированные по типам
+  def files_grouped_by_type
+    project_files.group_by(&:file_type)
   end
 end

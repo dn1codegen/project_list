@@ -4,7 +4,7 @@
 # Использование: ruby send.rb [config.yaml]
 # По умолчанию используется: project_config.yaml
 # gem install mime-types
-# 
+#
 require 'net/http'
 require 'json'
 require 'yaml'
@@ -35,26 +35,22 @@ class ProjectSender
     directories_data = @config['directories']
     files_ok = true
 
-    if directories_data && directories_data['measurements']
-      files_in_directory(directories_data['measurements']).each do |file_path|
-        unless check_file(file_path)
-          files_ok = false
+    if directories_data
+      directories_data.each do |folder_name, folder_config|
+        # Обратная совместимость со старым форматом
+        if folder_config.is_a?(String)
+          # Старый формат: measurements: "замеры"
+          folder_config = { 'path' => folder_config, 'title' => folder_name, 'display' => 'grid' }
         end
-      end
-    end
 
-    if directories_data && directories_data['examples']
-      files_in_directory(directories_data['examples']).each do |file_path|
-        unless check_file(file_path)
-          files_ok = false
+        folder_path = folder_config['path']
+        if folder_path
+          files_in_directory(folder_path).each do |file_path|
+            unless check_file(file_path)
+              files_ok = false
+            end
+          end
         end
-      end
-    end
-
-    if directories_data && directories_data['project_pdf']
-      pdf_file = find_pdf_in_directory(directories_data['project_pdf'])
-      unless pdf_file && check_file(pdf_file)
-        files_ok = false
       end
     end
 
@@ -141,30 +137,46 @@ class ProjectSender
     io.write('Content-Disposition: form-data; name="project[description]"' + "\r\n\r\n")
     io.write(project_data['description'].to_s + "\r\n")
 
-    # Замеры
-    if directories_data && directories_data['measurements']
-      files = files_in_directory(directories_data['measurements'])
-      files.each_with_index do |file_path, index|
-        description = get_filename_without_extension(file_path)
-        add_file_to_io(io, boundary, "measurements[#{index}][file]", file_path, "measurements[#{index}][description]", description)
-      end
-    end
+    # Динамическая обработка всех папок
+    if directories_data
+      directories_data.each do |folder_name, folder_config|
+        # Обратная совместимость со старым форматом
+        if folder_config.is_a?(String)
+          # Старый формат: measurements: "замеры"
+          folder_path = folder_config
+          folder_title = folder_name
+          folder_display = folder_name == 'project_pdf' ? 'list' : 'grid'
+        else
+          # Новый формат: замеры: { path: "замеры", title: "Замеры", display: "grid" }
+          folder_path = folder_config['path']
+          folder_title = folder_config['title'] || folder_name
+          folder_display = folder_config['display'] || 'grid'
+        end
 
-    # Примеры
-    if directories_data && directories_data['examples']
-      files = files_in_directory(directories_data['examples'])
-      files.each_with_index do |file_path, index|
-        description = get_filename_without_extension(file_path)
-        add_file_to_io(io, boundary, "examples[#{index}][file]", file_path, "examples[#{index}][description]", description)
-      end
-    end
+        next unless folder_path
 
-    # PDF проекта
-    if directories_data && directories_data['project_pdf']
-      pdf_file = find_pdf_in_directory(directories_data['project_pdf'])
-      if pdf_file
-        description = directories_data['project_pdf_description'] || get_filename_without_extension(pdf_file)
-        add_file_to_io(io, boundary, "project_pdf[file]", pdf_file, "project_pdf[description]", description)
+        # Получение файлов из папки
+        files = files_in_directory(folder_path)
+
+        # Отправка каждого файла
+        files.each_with_index do |file_path, index|
+          description = get_filename_without_extension(file_path)
+
+          add_file_with_type_to_io(
+            io,
+            boundary,
+            "files[#{folder_name}][#{index}][file]",
+            file_path,
+            "files[#{folder_name}][#{index}][description]",
+            description,
+            "files[#{folder_name}][#{index}][folder_name]",
+            folder_name,
+            "files[#{folder_name}][#{index}][folder_title]",
+            folder_title,
+            "files[#{folder_name}][#{index}][display]",
+            folder_display
+          )
+        end
       end
     end
 
@@ -173,7 +185,7 @@ class ProjectSender
     io.string
   end
 
-  def add_file_to_io(io, boundary, file_field_name, file_path, desc_field_name, description)
+  def add_file_with_type_to_io(io, boundary, file_field_name, file_path, desc_field_name, description, type_field_name, folder_name, title_field_name, folder_title, display_field_name, folder_display)
     filename = File.basename(file_path)
     mime_type = MIME::Types.type_for(filename).first || 'application/octet-stream'
     file_content = File.binread(file_path)
@@ -188,6 +200,24 @@ class ProjectSender
       io.write("--#{boundary}\r\n")
       io.write("Content-Disposition: form-data; name=\"#{desc_field_name}\"\r\n\r\n")
       io.write(description.to_s + "\r\n")
+    end
+
+    if folder_name
+      io.write("--#{boundary}\r\n")
+      io.write("Content-Disposition: form-data; name=\"#{type_field_name}\"\r\n\r\n")
+      io.write(folder_name.to_s + "\r\n")
+    end
+
+    if folder_title
+      io.write("--#{boundary}\r\n")
+      io.write("Content-Disposition: form-data; name=\"#{title_field_name}\"\r\n\r\n")
+      io.write(folder_title.to_s + "\r\n")
+    end
+
+    if folder_display
+      io.write("--#{boundary}\r\n")
+      io.write("Content-Disposition: form-data; name=\"#{display_field_name}\"\r\n\r\n")
+      io.write(folder_display.to_s + "\r\n")
     end
   end
 

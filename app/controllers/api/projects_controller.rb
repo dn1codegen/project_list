@@ -23,39 +23,25 @@ class Api::ProjectsController < ApplicationController
   end
 
   def create_project_files
-    if params[:measurements]
-      measurements_params = params[:measurements].to_unsafe_h.values
-      measurements_params.each do |file_data|
-        next if file_data[:file].nil?
+    # Универсальная обработка всех типов файлов
+    if params[:files]
+      params[:files].each do |folder_name, files_data|
+        files_data = files_data.to_unsafe_h.values
 
-        @project.project_files.create!(
-          file_type: "measurement",
-          description: file_data[:description],
-          file: file_data[:file]
-        )
+        files_data.each do |file_data|
+          next if file_data[:file].nil?
+
+          # Используем имя папки как тип файла
+          folder_name = file_data[:folder_name] || folder_name
+          description = file_data[:description]
+
+          @project.project_files.create!(
+            file_type: folder_name,
+            description: description,
+            file: file_data[:file]
+          )
+        end
       end
-    end
-
-    if params[:examples]
-      examples_params = params[:examples].to_unsafe_h.values
-      examples_params.each do |file_data|
-        next if file_data[:file].nil?
-
-        @project.project_files.create!(
-          file_type: "example",
-          description: file_data[:description],
-          file: file_data[:file]
-        )
-      end
-    end
-
-    if params[:project_pdf]
-      pdf_data = params[:project_pdf].to_unsafe_h
-      @project.project_files.create!(
-        file_type: "project_pdf",
-        description: pdf_data[:description],
-        file: pdf_data[:file]
-      )
     end
   end
 end
