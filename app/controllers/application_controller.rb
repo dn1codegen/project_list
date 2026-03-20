@@ -50,13 +50,16 @@ class ApplicationController < ActionController::Base
 
   def require_web_token
     token = params[:token]
-    @web_access_key = WebAccessKey.active.find_by(key: token)
 
-    if session[:admin_id] || cookies[:admin_remember_token]
-      return
-    end
-
-    unless @web_access_key
+    if token.present?
+      @web_access_key = WebAccessKey.active.find_by(key: token)
+      unless @web_access_key
+        redirect_to admin_login_path
+      end
+    else
+      if session[:admin_id] || cookies[:admin_remember_token]
+        return
+      end
       redirect_to admin_login_path
     end
   end

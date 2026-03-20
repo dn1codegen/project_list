@@ -24,6 +24,16 @@
   </head>
 
   <body data-track-visit="<%= @track_visit ? 'true' : 'false' %>" data-access-log-id="<%= @access_log_id %>">
+    <% if notice %>
+      <div class="alert" style="background-color: #d4edda; border-color: #c3e6cb; color: #155724; margin-bottom: 20px;">
+        <%= notice %>
+      </div>
+    <% end %>
+    <% if alert %>
+      <div class="alert" style="background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; margin-bottom: 20px;">
+        <%= alert %>
+      </div>
+    <% end %>
     <%= yield %>
   </body>
 </html>

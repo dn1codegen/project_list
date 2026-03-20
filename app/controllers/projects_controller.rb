@@ -37,14 +37,14 @@ class ProjectsController < ApplicationController
   end
 
   def setup_visit_tracking
-    return if session[:admin_id] || cookies[:admin_remember_token]
+    return if params[:token].blank? && (session[:admin_id] || cookies[:admin_remember_token])
 
     @track_visit = true
     @access_log_id = session[:access_log_id]
   end
 
   def log_project_view
-    return if session[:admin_id] || cookies[:admin_remember_token]
+    return if params[:token].blank? && (session[:admin_id] || cookies[:admin_remember_token])
     return unless @access_log_id && @project
 
     access_log = AccessLog.find_by(id: @access_log_id)

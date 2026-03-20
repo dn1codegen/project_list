@@ -36,6 +36,10 @@ class AdminController < ApplicationController
 
   def settings
     if request.patch?
+      if params[:admin][:password].blank?
+        params[:admin].delete(:password)
+        params[:admin].delete(:password_confirmation)
+      end
       if current_admin.update(admin_params)
         redirect_to admin_settings_path, notice: "Настройки сохранены"
       else

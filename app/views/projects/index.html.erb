@@ -2,7 +2,7 @@
   <div class="container">
     <h1 class="navbar-brand">Проекты</h1>
     <div style="display: flex; align-items: center; gap: 15px;">
-      <% if current_admin %>
+      <% if current_admin && params[:token].blank? %>
         <%= link_to 'Админка', admin_dashboard_path, class: 'btn btn-sm btn-primary' %>
       <% end %>
       <% if @web_access_key_name %>

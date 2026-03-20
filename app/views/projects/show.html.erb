@@ -22,7 +22,7 @@
         </div>
       <% end %>
       <div style="display: flex; gap: 15px;">
-        <% if current_admin %>
+        <% if current_admin && params[:token].blank? %>
           <%= link_to 'Админка', admin_dashboard_path, class: 'btn btn-sm btn-primary' %>
         <% end %>
         <%= link_to 'К Списку Проектов', projects_path(token: params[:token]), class: 'btn btn-sm btn-light' if params[:token].present? %>

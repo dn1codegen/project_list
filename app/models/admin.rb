@@ -5,4 +5,6 @@ class Admin < ApplicationRecord
 
   validates :password, presence: true, confirmation: true, on: :create
   validates :password_confirmation, presence: true, on: :create
+  validates :password, confirmation: true, on: :update, if: :password_digest_changed?
+  validates :password_confirmation, presence: true, on: :update, if: :password_digest_changed?
 end
