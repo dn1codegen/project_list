@@ -281,12 +281,25 @@ code {
   .navbar .container {
     flex-direction: column;
     gap: 10px;
+    text-align: center;
+  }
+
+  .navbar .container > div[style*="display: flex"] {
+    justify-content: center;
   }
 
   .table th,
   .table td {
     padding: 8px 10px;
     font-size: 12px;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: block !important;
   }
 }
 

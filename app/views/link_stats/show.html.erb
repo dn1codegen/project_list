@@ -17,7 +17,6 @@
             <tr>
               <th>Название</th>
               <th>Количество</th>
-              <th>Время</th>
               <th>Посещение</th>
             </tr>
           </thead>
@@ -33,15 +32,6 @@
                   </div>
                 </td>
                 <td><%= stats[:views_count] %></td>
-                <td>
-                  <% if stats[:duration] && stats[:duration] > 0 %>
-                    <% minutes = stats[:duration] / 60 %>
-                    <% seconds = stats[:duration] % 60 %>
-                    <%= "#{minutes}м #{seconds}с" %>
-                  <% else %>
-                    <span style="color: #6c757d;">-</span>
-                  <% end %>
-                </td>
                 <td>
                   <% if stats[:last_viewed_at] %>
                     <%= stats[:last_viewed_at].strftime('%d.%m.%Y %H:%M') %>

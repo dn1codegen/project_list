@@ -1,0 +1,30 @@
+<nav class="navbar">
+  <div class="container">
+    <h1 class="navbar-brand">Настройки админа</h1>
+    <%= link_to '← К Админке', admin_dashboard_path, class: 'btn btn-sm btn-light' %>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="card">
+    <h2 class="card-title">Сменить логин и пароль</h2>
+    <%= form_with(url: admin_settings_path, method: :patch, local: true) do |f| %>
+      <div class="form-group">
+        <%= f.label :email, 'Email (логин)' %>
+        <%= f.email_field :email, value: current_admin.email, required: true, class: 'form-control' %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :password, 'Новый пароль' %>
+        <%= f.password_field :password, class: 'form-control', placeholder: 'Оставьте пустым, если не хотите менять' %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :password_confirmation, 'Подтверждение пароля' %>
+        <%= f.password_field :password_confirmation, class: 'form-control' %>
+      </div>
+
+      <%= f.submit 'Сохранить', class: 'btn btn-primary' %>
+    <% end %>
+  </div>
+</div>

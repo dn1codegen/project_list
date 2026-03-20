@@ -13,6 +13,8 @@ Rails.application.routes.draw do
     get :login
     post :login
     delete :logout
+    get :settings
+    patch :settings
   end
 
   get "/admin", to: redirect("/admin/login")

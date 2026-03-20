@@ -34,7 +34,21 @@ class AdminController < ApplicationController
     redirect_to admin_login_path, notice: "Выход выполнен"
   end
 
+  def settings
+    if request.patch?
+      if current_admin.update(admin_params)
+        redirect_to admin_settings_path, notice: "Настройки сохранены"
+      else
+        flash.now[:alert] = "Ошибка при сохранении"
+      end
+    end
+  end
+
   private
+
+  def admin_params
+    params.require(:admin).permit(:email, :password, :password_confirmation)
+  end
 
   def authenticate_admin!
     unless session[:admin_id]

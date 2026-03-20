@@ -62,16 +62,20 @@
               <tr style="cursor: pointer;" onclick="window.location.href='<%= project_path(project, token: params[:token]) %>'">
                 <td style="vertical-align: top;">
                   <div style="margin-bottom: 8px;">
-                    <strong><%= project.name %></strong> 
-                    <code style="margin-left: 8px;"><%= project.sku %></code>
+                    <strong><%= project.name %></strong>
                   </div>
                   <div>
                     <%= project.customer %>
                     <% if project.address.present? %>
-                      <span style="margin-left: 8px;">•</span>
-                      <span style="margin-left: 8px;"><%= project.address %></span>
+                      <span style="margin-left: 8px;" class="desktop-only">•</span>
+                      <span style="margin-left: 8px;" class="desktop-only"><%= project.address %></span>
                     <% end %>
                   </div>
+                  <% if project.address.present? %>
+                    <div class="mobile-only" style="color: #666; font-size: 13px; display: none;">
+                      <%= project.address %>
+                    </div>
+                  <% end %>
                 </td>
                 <td style="vertical-align: top;">
                   <% if project.project_pdf && project.project_pdf.description.present? %>
