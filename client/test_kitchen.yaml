@@ -1,0 +1,25 @@
+server_url: "http://localhost:3000"
+api_key: "ef4b0d81cd8b3bec2ffcd79ffc0764a833aa88a839edf9be3a91c9024354b273"
+
+project:
+  sku: "KITCHEN-001"
+  name: "Кухня проект"
+  customer: "Тестовый клиент"
+  address: "Тестовый адрес"
+  description: "Проект кухни с PDF документом"
+
+directories:
+  замеры:
+    path: "замеры"
+    title: "Замеры помещения"
+    display: "grid"
+
+  примеры:
+    path: "примеры"
+    title: "Примеры работ"
+    display: "grid"
+
+  проект:
+    path: "проект"
+    title: "Проект (PDF)"
+    display: "list"
